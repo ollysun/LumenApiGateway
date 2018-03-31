@@ -1,7 +1,7 @@
 {
-    "name": "laravel/lumen",
-    "description": "The Laravel Lumen Framework.",
-    "keywords": ["framework", "laravel", "lumen"],
+    "name": "triadev/lumen-api-gateway",
+    "description": "Lumen-Api-Gateway",
+    "keywords": ["framework", "laravel", "lumen", "api", "php"],
     "license": "MIT",
     "type": "project",
     "require": {
