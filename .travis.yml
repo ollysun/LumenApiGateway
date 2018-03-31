@@ -1,0 +1,13 @@
+language: php
+
+services:
+    - docker
+
+php:
+    - '7.1'
+
+install:
+    composer install --dev --no-interaction
+
+script:
+    ./vendor/bin/phpunit
