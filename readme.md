@@ -1,8 +1,8 @@
 # LumenApiGateway
 
 [![Software license][ico-license]](LICENSE)
-[![Coveralls](https://coveralls.io/repos/github/triadev/lumen-api-gateway/badge.svg?branch=master)](https://coveralls.io/github/triadev/lumen-api-gateway?branch=master)
-[![CodeCov](https://codecov.io/gh/triadev/lumen-api-gateway/branch/master/graph/badge.svg)](https://codecov.io/gh/triadev/lumen-api-gateway)
+[![Coveralls](https://coveralls.io/repos/github/triadev/LumenApiGateway/badge.svg?branch=master)](https://coveralls.io/github/triadev/LumenApiGateway?branch=master)
+[![CodeCov](https://codecov.io/gh/triadev/LumenApiGateway/branch/master/graph/badge.svg)](https://codecov.io/gh/triadev/LumenApiGateway)
 [![Latest stable][ico-version-stable]][link-packagist]
 [![Latest development][ico-version-dev]][link-packagist]
 [![Monthly installs][ico-downloads-monthly]][link-downloads]
