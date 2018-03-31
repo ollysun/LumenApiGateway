@@ -10,4 +10,4 @@ install:
     composer install --dev --no-interaction
 
 script:
-    ./vendor/bin/phpunit
+    ./vendor/phpunit/phpunit/phpunit
