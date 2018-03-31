@@ -19,6 +19,12 @@
             <directory suffix=".php">./app</directory>
             <exclude>
                 <file>./routes/web.php</file>
+                <file>./app/Console/Kernel.php</file>
+                <directory>./app/Exceptions</file>
+                <directory>./app/Jobs</file>
+                <directory>./app/Listeners</file>
+                <directory>./app/Http/Services</file>
+                <directory>./app/Http/Aggregations</file>
             </exclude>
         </whitelist>
     </filter>
