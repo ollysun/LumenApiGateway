@@ -1,5 +1,7 @@
 <?php
 
+use SocialEngine\SnifferRules\ServiceProvider;
+
 require_once __DIR__.'/../vendor/autoload.php';
 
 try {
@@ -32,6 +34,7 @@ $app->withEloquent();
 
 $app->configure('auth');
 $app->configure('gateway');
+$app->configure('sniffer-rules');
 
 /*
 |--------------------------------------------------------------------------
@@ -89,6 +92,10 @@ $app->routeMiddleware([
 $app->register(Laravel\Passport\PassportServiceProvider::class);
 $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
 $app->register(\Irazasyed\Larasupport\Providers\ArtisanServiceProvider::class);
+
+if (app()->environment() == 'testing' || app()->environment() == 'local') {
+    $app->register(ServiceProvider::class);
+}
 
 $app->register(\App\Providers\Gateway\Provider\ServiceProvider::class);
 

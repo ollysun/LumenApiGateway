@@ -9,5 +9,6 @@ php:
 install:
     composer install --dev --no-interaction
 
-script:
-    ./vendor/phpunit/phpunit/phpunit
+before_script: php artisan sniff -n
+
+script: ./vendor/phpunit/phpunit/phpunit
