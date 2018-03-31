@@ -6,9 +6,6 @@ services:
 php:
     - '7.1'
 
-install:
-    composer install --dev --no-interaction
-
-before_script: php artisan sniff -n
+install: composer install --dev --no-interaction
 
 script: ./vendor/phpunit/phpunit/phpunit
