@@ -60,6 +60,7 @@ class BuildRequestUrlTest extends TestCase
             $service,
             'endpoint/{test1}',
             [
+                'path' => 'Path',
                 'test2' => 'random'
             ],
             [

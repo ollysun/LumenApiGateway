@@ -20,11 +20,11 @@
             <exclude>
                 <file>./routes/web.php</file>
                 <file>./app/Console/Kernel.php</file>
-                <directory>./app/Exceptions</file>
-                <directory>./app/Jobs</file>
-                <directory>./app/Listeners</file>
-                <directory>./app/Http/Services</file>
-                <directory>./app/Http/Aggregations</file>
+                <directory>./app/Exceptions</directory>
+                <directory>./app/Jobs</directory>
+                <directory>./app/Listeners</directory>
+                <directory>./app/Http/Services</directory>
+                <directory>./app/Http/Aggregations</directory>
             </exclude>
         </whitelist>
     </filter>
