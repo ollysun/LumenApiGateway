@@ -4,6 +4,7 @@ namespace App\Providers\Gateway\Controller;
 use App\Providers\Gateway\Contract\GatewayContract;
 use Illuminate\Http\Request;
 use Laravel\Lumen\Routing\Controller;
+use Triadev\PrometheusExporter\Contract\PrometheusExporterContract;
 
 /**
  * Class GatewayController
@@ -26,7 +27,9 @@ class GatewayController extends Controller
      */
     public function gateway(Request $request, string $serviceKey, string $endpoint)
     {
-        return $this->getGatewayService()->gateway(
+        $start = microtime(true);
+
+        $response = $this->getGatewayService()->gateway(
             $serviceKey,
             $endpoint,
             $request->query(),
@@ -34,6 +37,26 @@ class GatewayController extends Controller
             $request->request->all(),
             $request->headers->all()
         );
+
+        $this->getPrometheusExporter()->setHistogram(
+            'request_duration_milliseconds',
+            'gateway request duration in milliseconds',
+            round((microtime(true) - $start) * 1000.0),
+            'http',
+            [
+                'status',
+                'handler'
+            ],
+            [
+                $response->getStatusCode(),
+                'gateway'
+            ],
+            [
+                5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000, 15000, 25000, 50000
+            ]
+        );
+
+        return $response;
     }
 
     /**
@@ -46,7 +69,9 @@ class GatewayController extends Controller
      */
     public function aggregation(Request $request, string $aggregationKey, string $endpoint)
     {
-        return $this->getGatewayService()->aggregation(
+        $start = microtime(true);
+
+        $response = $this->getGatewayService()->aggregation(
             $aggregationKey,
             $endpoint,
             $request->query(),
@@ -54,10 +79,35 @@ class GatewayController extends Controller
             $request->request->all(),
             $request->headers->all()
         );
+
+        $this->getPrometheusExporter()->setHistogram(
+            'request_duration_milliseconds',
+            'gateway aggregation request duration in milliseconds',
+            round((microtime(true) - $start) * 1000.0),
+            'http',
+            [
+                'status',
+                'handler'
+            ],
+            [
+                $response->getStatusCode(),
+                'gateway_aggregation'
+            ],
+            [
+                5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000, 15000, 25000, 50000
+            ]
+        );
+
+        return $response;
     }
 
     private function getGatewayService() : GatewayContract
     {
         return app(GatewayContract::class);
+    }
+
+    private function getPrometheusExporter() : PrometheusExporterContract
+    {
+        return app(PrometheusExporterContract::class);
     }
 }

@@ -12,6 +12,7 @@
         "guzzlehttp/guzzle": "^6.3",
         "irazasyed/larasupport": "^1.6",
         "laravel/lumen-framework": "5.6.*",
+        "triadev/laravel-prometheus-exporter": "^1.4",
         "vlucas/phpdotenv": "~2.2"
     },
     "require-dev": {

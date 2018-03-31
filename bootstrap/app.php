@@ -1,6 +1,9 @@
 <?php
 
 use SocialEngine\SnifferRules\ServiceProvider;
+use Triadev\PrometheusExporter\Provider\PrometheusExporterServiceProvider;
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
+use App\Providers\AppServiceProvider;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -97,7 +100,9 @@ if (app()->environment() == 'testing' || app()->environment() == 'local') {
     $app->register(ServiceProvider::class);
 }
 
+$app->register(AppServiceProvider::class);
 $app->register(\App\Providers\Gateway\Provider\ServiceProvider::class);
+$app->register(PrometheusExporterServiceProvider::class);
 
 /*
 |--------------------------------------------------------------------------

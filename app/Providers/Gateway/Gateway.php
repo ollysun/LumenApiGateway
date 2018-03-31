@@ -85,7 +85,10 @@ class Gateway implements GatewayContract
                 $headers
             ));
 
-            return response(json_decode($response->getBody()->getContents(), true), $response->getStatusCode());
+            return new Response(
+                json_decode($response->getBody()->getContents(), true),
+                $response->getStatusCode()
+            );
         } catch (GuzzleException $e) {
             Log::error('Error while dispatching: ' . $e->getMessage(), [
                 'url' => $requestUrl,
@@ -184,7 +187,7 @@ class Gateway implements GatewayContract
             }
         ]))->promise()->wait();
 
-        return response($result);
+        return new Response($result);
     }
 
     /**
