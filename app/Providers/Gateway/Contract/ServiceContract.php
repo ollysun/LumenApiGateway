@@ -41,20 +41,13 @@ interface ServiceContract
      * @return int
      */
     public function getTimeout() : int;
-
+    
     /**
-     * Get http methods by route
-     *
+     * Get routes
+     * 
      * @return array
      */
-    public function getHttpMethodsByRoute() : array;
-
-    /**
-     * Get scopes by route
-     *
-     * @return array
-     */
-    public function getScopesByRoute() : array;
+    public function getRoutes() : array;
 
     /**
      * Get headers

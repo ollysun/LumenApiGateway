@@ -38,12 +38,7 @@ class BuildRequestOptionsTest extends TestCase
                 return 10;
             }
 
-            public function getHttpMethodsByRoute() : array
-            {
-                return [];
-            }
-
-            public function getScopesByRoute() : array
+            public function getRoutes() : array
             {
                 return [];
             }

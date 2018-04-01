@@ -58,30 +58,23 @@ class JsonPlaceholder implements ServiceContract
     {
         return 10;
     }
-
+    
     /**
-     * Get http methods by route
-     *
+     * Get routes
+     * 
      * @return array
      */
-    public function getHttpMethodsByRoute(): array
+    public function getRoutes() : array
     {
         return [
-            'posts' => ['GET'],
-            'posts\/[0-9]+' => ['GET']
-        ];
-    }
-
-    /**
-     * Get scopes by route
-     *
-     * @return array
-     */
-    public function getScopesByRoute(): array
-    {
-        return [
-            'posts' => ['posts'],
-            'posts\/[0-9]+' => ['posts']
+            'posts' => [
+                'methods' => ['GET'],
+                'scopes' => ['posts']
+            ],
+            'posts\/[0-9]+' => [
+                'methods' => ['GET'],
+                'scopes' => ['posts']
+            ]
         ];
     }
 

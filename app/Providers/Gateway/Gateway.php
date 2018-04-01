@@ -5,7 +5,7 @@ use App\Providers\Gateway\Business\Helper\BuildRequestOptions;
 use App\Providers\Gateway\Business\Helper\BuildRequestUrl;
 use App\Providers\Gateway\Business\Helper\CheckHttpMethod;
 use App\Providers\Gateway\Business\Helper\CheckScopesByUser;
-use App\Providers\Gateway\Business\Helper\SearchRouteKeyByEndpoint;
+use App\Providers\Gateway\Business\Helper\SearchRouteByEndpoint;
 use App\Providers\Gateway\Contract\ActionContract;
 use App\Providers\Gateway\Contract\AggregationContract;
 use App\Providers\Gateway\Contract\GatewayContract;
@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Log;
 use GuzzleHttp\Exception\GuzzleException;
 use Laravel\Passport\Exceptions\MissingScopeException;
 use Psr\Http\Message\ResponseInterface;
+use PHPUnit\Util\Printer;
+use App\Providers\Gateway\Model\Route;
 
 /**
  * Class Gateway
@@ -29,7 +31,7 @@ use Psr\Http\Message\ResponseInterface;
 class Gateway implements GatewayContract
 {
     use BuildRequestUrl,
-        SearchRouteKeyByEndpoint,
+    SearchRouteByEndpoint,
         CheckScopesByUser,
         CheckHttpMethod,
         BuildRequestOptions;
@@ -69,10 +71,10 @@ class Gateway implements GatewayContract
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $routeKey = $this->searchRouteKeyByEndpoint($endpoint, array_keys($service->getScopesByRoute()));
+        $route = $this->searchRouteByEndpoint($endpoint, $service->getRoutes());
 
-        $this->checkScopesByUser($service->getScopesByRoute()[$routeKey]);
-        $this->checkHttpMethod($httpMethod, $service->getHttpMethodsByRoute()[$routeKey]);
+        $this->checkScopesByUser($route);
+        $this->checkHttpMethod($httpMethod, $route->getMethods());
 
         $guzzle = $this->getGuzzleClient();
 
@@ -154,7 +156,11 @@ class Gateway implements GatewayContract
             foreach ($actionClasses as $actionClass) {
                 $action = $this->createAction($actionClass);
 
-                $this->checkScopesByUser($action->getScopes());
+                $route = new Route([
+                    $action->getHttpMethod()
+                ], $action->getScopes());
+
+                $this->checkScopesByUser($route);
 
                 try {
                     $service = $this->createService($action->getService());

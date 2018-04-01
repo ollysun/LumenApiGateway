@@ -9,15 +9,13 @@ class EndpointNotProtectedByScope extends \Exception
 {
     /**
      * EndpointNotProtectedByScope constructor.
-     * @param string $service
      * @param string $endpoint
      */
-    public function __construct(string $service, string $endpoint)
+    public function __construct(string $endpoint)
     {
         parent::__construct(sprintf(
-            "There are no scopes defined for endpoint %s on service %s",
-            $endpoint,
-            $service
+            "There are no scopes defined for endpoint %s",
+            $endpoint
         ), 0, null);
     }
 }
