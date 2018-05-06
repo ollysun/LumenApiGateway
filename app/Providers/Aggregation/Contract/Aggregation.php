@@ -1,12 +1,19 @@
 <?php
-namespace App\Providers\Gateway\Contract;
+namespace App\Providers\Aggregation\Contract;
 
 /**
- * Interface AggregationContract
- * @package App\Providers\Gateway\Contract
+ * Interface Aggregation
+ * @package App\Providers\Aggregation\Contract
  */
-interface AggregationContract
+interface Aggregation
 {
+    /**
+     * Get aggregation key
+     * 
+     * @return string
+     */
+    public function getAggregationKey() : string;
+
     /**
      * Get http method
      *

@@ -1,14 +1,24 @@
 <?php
 namespace App\Http\Services;
 
-use App\Providers\Gateway\Contract\ServiceContract;
+use App\Providers\Service\Contract\Service;
 
 /**
- * Class JsonPlaceholder
+ * Class Test
  * @package App\Http\Services
  */
-class JsonPlaceholder implements ServiceContract
+class Test implements Service
 {
+    /**
+     * Get service key
+     * 
+     * @return string
+     */
+    public function getServiceKey() : string
+    {
+        return 'test';
+    }
+
     /**
      * Get scheme
      *
@@ -16,7 +26,7 @@ class JsonPlaceholder implements ServiceContract
      */
     public function getScheme(): string
     {
-        return 'https';
+        return 'http';
     }
 
     /**
@@ -26,7 +36,7 @@ class JsonPlaceholder implements ServiceContract
      */
     public function getHost(): string
     {
-        return 'jsonplaceholder.typicode.com';
+        return '172.20.0.1';
     }
 
     /**
@@ -36,7 +46,7 @@ class JsonPlaceholder implements ServiceContract
      */
     public function getPort(): int
     {
-        return 443;
+        return 80;
     }
 
     /**
@@ -56,7 +66,7 @@ class JsonPlaceholder implements ServiceContract
      */
     public function getTimeout(): int
     {
-        return 10;
+        return 5;
     }
     
     /**
@@ -67,13 +77,13 @@ class JsonPlaceholder implements ServiceContract
     public function getRoutes() : array
     {
         return [
-            'posts' => [
+            'array' => [
                 'methods' => ['GET'],
-                'scopes' => ['posts']
+                'scopes' => ['gateway']
             ],
-            'posts\/[0-9]+' => [
+            'array\/[0-9]+' => [
                 'methods' => ['GET'],
-                'scopes' => ['posts']
+                'scopes' => ['gateway']
             ]
         ];
     }
@@ -86,5 +96,15 @@ class JsonPlaceholder implements ServiceContract
     public function getHeaders(): array
     {
         return [];
+    }
+
+    /**
+     * Get output key
+     * 
+     * @return string
+     */
+    public function getOutputKey() : string
+    {
+        return 'test';
     }
 }

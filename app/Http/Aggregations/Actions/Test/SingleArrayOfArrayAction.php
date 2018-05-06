@@ -1,13 +1,13 @@
 <?php
-namespace App\Http\Aggregations\Actions\JsonPlaceholder;
+namespace App\Http\Aggregations\Actions\Test;
 
-use App\Providers\Gateway\Contract\ActionContract;
+use App\Providers\Aggregation\Contract\Action;
 
 /**
- * Class PostList
- * @package App\Http\Aggregations\Actions\JsonPlaceholder
+ * Class SingleArrayOfArrayAction
+ * @package App\Http\Aggregations\Actions\Test
  */
-class PostList implements ActionContract
+class SingleArrayOfArrayAction implements Action
 {
     /**
      * Get service
@@ -16,7 +16,7 @@ class PostList implements ActionContract
      */
     public function getService(): string
     {
-        return 'jsonplaceholder';
+        return 'test';
     }
 
     /**
@@ -36,7 +36,7 @@ class PostList implements ActionContract
      */
     public function getPath(): string
     {
-        return 'posts';
+        return 'array/{arrayId}';
     }
 
     /**
@@ -47,7 +47,17 @@ class PostList implements ActionContract
     public function getScopes(): array
     {
         return [
-            'posts'
+            'gateway'
         ];
+    }
+
+    /**
+     * Get priority
+     * 
+     * @return int
+     */
+    public function getPriority() : int
+    {
+        return 2;
     }
 }

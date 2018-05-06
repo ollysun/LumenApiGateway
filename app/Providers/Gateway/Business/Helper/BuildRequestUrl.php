@@ -1,7 +1,7 @@
 <?php
 namespace App\Providers\Gateway\Business\Helper;
 
-use App\Providers\Gateway\Contract\ServiceContract;
+use App\Providers\Service\Contract\Service;
 
 /**
  * Trait BuildRequestUrl
@@ -12,20 +12,24 @@ trait BuildRequestUrl
     /**
      * Build request url
      *
-     * @param ServiceContract $service
+     * @param Service $service
      * @param string $endpoint
      * @param array $queryParams
      * @param array $urlParams
      * @return string
      */
     public function buildRequestUrl(
-        ServiceContract $service,
+        Service $service,
         string $endpoint,
         array $queryParams = [],
         array $urlParams = []
     ) : string {
+        $url = '';
+
         // Scheme
-        $url = sprintf("%s://", $service->getScheme());
+        if (in_array(strtolower($service->getScheme()), ['http', 'https'])) {
+            $url .= sprintf("%s://", $service->getScheme());
+        }
 
         // Host
         $url .= $service->getHost();

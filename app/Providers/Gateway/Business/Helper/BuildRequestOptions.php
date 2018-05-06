@@ -1,7 +1,7 @@
 <?php
 namespace App\Providers\Gateway\Business\Helper;
 
-use App\Providers\Gateway\Contract\ServiceContract;
+use App\Providers\Service\Contract\Service;
 
 /**
  * Trait BuildRequestOptions
@@ -12,12 +12,12 @@ trait BuildRequestOptions
     /**
      * Build request options
      *
-     * @param ServiceContract $service
+     * @param Service $service
      * @param array $payload
      * @param array $headers
      * @return array
      */
-    public function buildRequestOptions(ServiceContract $service, array $payload, array $headers) : array
+    public function buildRequestOptions(Service $service, array $payload, array $headers) : array
     {
         $optionHeaders = [
             'expect' => ''

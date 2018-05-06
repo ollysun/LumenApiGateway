@@ -6,10 +6,7 @@ use App\Providers\Gateway\Business\Helper\BuildRequestUrl;
 use App\Providers\Gateway\Business\Helper\CheckHttpMethod;
 use App\Providers\Gateway\Business\Helper\CheckScopesByUser;
 use App\Providers\Gateway\Business\Helper\SearchRouteByEndpoint;
-use App\Providers\Gateway\Contract\ActionContract;
-use App\Providers\Gateway\Contract\AggregationContract;
 use App\Providers\Gateway\Contract\GatewayContract;
-use App\Providers\Gateway\Contract\ServiceContract;
 use App\Providers\Gateway\Exception\AggregationNotFound;
 use App\Providers\Gateway\Exception\InvalidHttpMethodByRoute;
 use App\Providers\Gateway\Exception\ServiceNotFound;
@@ -23,6 +20,10 @@ use Laravel\Passport\Exceptions\MissingScopeException;
 use Psr\Http\Message\ResponseInterface;
 use PHPUnit\Util\Printer;
 use App\Providers\Gateway\Model\Route;
+use Illuminate\Support\Facades\Cache;
+use App\Providers\Service\Contract\ServiceContract;
+use App\Providers\Aggregation\Contract\AggregationContract;
+use App\Providers\Aggregation\Contract\Action;
 
 /**
  * Class Gateway
@@ -31,7 +32,7 @@ use App\Providers\Gateway\Model\Route;
 class Gateway implements GatewayContract
 {
     use BuildRequestUrl,
-    SearchRouteByEndpoint,
+        SearchRouteByEndpoint,
         CheckScopesByUser,
         CheckHttpMethod,
         BuildRequestOptions;
@@ -60,7 +61,7 @@ class Gateway implements GatewayContract
         array $headers = []
     ) : Response {
         try {
-            $service = $this->createService($serviceKey);
+            $service = $this->getServicesService()->getService($serviceKey);
         } catch (ServiceNotFound $e) {
             return Response::create([
                 'status' => 'ERROR',
@@ -78,34 +79,23 @@ class Gateway implements GatewayContract
 
         $guzzle = $this->getGuzzleClient();
 
-        $requestUrl = $this->buildRequestUrl($service, $endpoint, $queryParams);
+        $requests = (function () use ($guzzle, $service, $httpMethod, $endpoint, $queryParams, $payload, $headers) {
+            yield $service->getOutputKey() => $guzzle->requestAsync(
+                $httpMethod,
+                $this->buildRequestUrl($service, $endpoint, $queryParams),
+                $this->buildRequestOptions(
+                    $service,
+                    $payload,
+                    $headers
+                )
+            )->then(function (ResponseInterface $response) {
+                return json_decode($response->getBody(), true);
+            });
+        })();
 
-        try {
-            $response = $guzzle->request($httpMethod, $requestUrl, $this->buildRequestOptions(
-                $service,
-                $payload,
-                $headers
-            ));
-
-            return new Response(
-                json_decode($response->getBody()->getContents(), true),
-                $response->getStatusCode()
-            );
-        } catch (GuzzleException $e) {
-            Log::error('Error while dispatching: ' . $e->getMessage(), [
-                'url' => $requestUrl,
-                'http_method' => $httpMethod
-            ]);
-
-            return new Response([
-                'status' => 'ERROR',
-                'result' => [
-                    'message' => $e->getMessage(),
-                    'url' => $requestUrl,
-                    'http_method' => $httpMethod
-                ]
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        return new Response(
+            $this->dispatch($requests)
+        );
     }
 
     /**
@@ -131,7 +121,7 @@ class Gateway implements GatewayContract
         array $headers = []
     ) : Response {
         try {
-            $aggregation = $this->createAggregation($aggregationKey);
+            $aggregation = $this->getAggregationService()->getAggregation($aggregationKey);
         } catch (AggregationNotFound $e) {
             return Response::create([
                 'status' => 'ERROR',
@@ -148,125 +138,88 @@ class Gateway implements GatewayContract
             throw new \Exception();
         }
 
-        $guzzle = $this->getGuzzleClient();
+        $priorityActions = [];
 
-        $actionClasses = array_values($aggregation->getActions());
+        foreach ($aggregation->getActions() as $actionKey => $actionClass) {
+            $action = $this->getAggregationService()->getAction($actionClass);
 
-        $requests = (function () use ($guzzle, $actionClasses, $queryParams, $urlParams, $payload, $headers) {
-            foreach ($actionClasses as $actionClass) {
-                $action = $this->createAction($actionClass);
-
-                $route = new Route([
-                    $action->getHttpMethod()
-                ], $action->getScopes());
-
-                $this->checkScopesByUser($route);
-
-                try {
-                    $service = $this->createService($action->getService());
-                } catch (ServiceNotFound $e) {
-                    continue;
-                }
-
-                yield $guzzle->requestAsync(
-                    $action->getHttpMethod(),
-                    $this->buildRequestUrl($service, $action->getPath(), $queryParams, $urlParams),
-                    $this->buildRequestOptions(
-                        $service,
-                        $payload,
-                        $headers
-                    )
-                )->then(function (ResponseInterface $response) {
-                    return json_decode($response->getBody(), true);
-                });
+            if (!array_key_exists($action->getPriority(), $priorityActions)) {
+                $priorityActions[$action->getPriority()] = [];
             }
-        })();
 
-        $actionKeys = array_keys($aggregation->getActions());
+            $priorityActions[$action->getPriority()][$actionKey] = $action;
+        }
+
+        ksort($priorityActions, SORT_NUMERIC);
+
+        $guzzle = $this->getGuzzleClient();
 
         $result = [];
 
-        (new EachPromise($requests, [
-            'concurrency' => count($requests),
-            'fulfilled' => function (array $response) use ($actionKeys, &$result) {
-                $result[$actionKeys[count($result)]] = $response;
-            }
-        ]))->promise()->wait();
+        foreach ($priorityActions as $actions) {
+            $requests = (function () use ($guzzle, $actions, $queryParams, $urlParams, $payload, $headers) {
+                /** @var ServiceContract $services */
+                $services = app(ServiceContract::class);
+
+                foreach ($actions as $actionKey => $action) {
+                    $route = new Route([
+                        $action->getHttpMethod()
+                    ], $action->getScopes());
+    
+                    $this->checkScopesByUser($route);
+    
+                    try {
+                        $service = $services->getService($action->getService());
+                    } catch (ServiceNotFound $e) {
+                        continue;
+                    }
+    
+                    yield $actionKey => $guzzle->requestAsync(
+                        $action->getHttpMethod(),
+                        $this->buildRequestUrl($service, $action->getPath(), $queryParams, $urlParams),
+                        $this->buildRequestOptions(
+                            $service,
+                            $payload,
+                            $headers
+                        )
+                    )->then(function (ResponseInterface $response) {
+                        return json_decode($response->getBody(), true);
+                    });
+                }
+            })();
+
+            $result = array_merge($result, $this->dispatch($requests));
+        }
 
         return new Response($result);
     }
-
-    /**
-     * Create service
-     *
-     * @param string $serviceKey
-     * @return ServiceContract
-     * @throws ServiceNotFound
-     */
-    private function createService(string $serviceKey) : ServiceContract
+    
+    private function dispatch(\Generator $requests) : array
     {
-        $serviceClass = config(sprintf("gateway.services.%s", $serviceKey));
-        if ($serviceClass) {
-            $service = new $serviceClass();
-            if ($service instanceof ServiceContract) {
-                return $service;
+        $result = [];
+
+        (new EachPromise($requests, [
+            'concurrency' => 4,
+            'fulfilled' => function (array $response, $key) use ($requests, &$result) {
+                $result[$key] = $response;
             }
-        }
+        ]))->promise()->wait();
 
-        throw new ServiceNotFound();
-    }
-
-    /**
-     * Create aggregation
-     *
-     * @param string $aggregationKey
-     * @return AggregationContract
-     * @throws AggregationNotFound
-     */
-    private function createAggregation(string $aggregationKey) : AggregationContract
-    {
-        $aggregationClass = config(sprintf("gateway.aggregations.%s", $aggregationKey));
-        if ($aggregationClass) {
-            $aggregation = new $aggregationClass();
-            if ($aggregation instanceof AggregationContract) {
-                return $aggregation;
-            }
-        }
-
-        throw new AggregationNotFound();
-    }
-
-    /**
-     * Create action
-     *
-     * @param string $actionClass
-     * @return ActionContract
-     *
-     * @throws \Exception
-     */
-    private function createAction(string $actionClass) : ActionContract
-    {
-        $action = new $actionClass();
-
-        if (!$action) {
-            throw new \Exception(sprintf(
-                "The action does not exist: %s",
-                $actionClass
-            ));
-        }
-
-        if (!$action instanceof ActionContract) {
-            throw new \Exception(sprintf(
-                "The action is not an instance of ActionContract: %s",
-                $actionClass
-            ));
-        }
-
-        return $action;
+        return $result;
     }
 
     private function getGuzzleClient() : ClientInterface
     {
         return app(ClientInterface::class);
+    }
+
+    private function getServicesService() : ServiceContract
+    {
+        return app(ServiceContract::class);
+    }
+
+    private function getAggregationService() : AggregationContract
+    {
+        return app(AggregationContract::class);
     }
 }

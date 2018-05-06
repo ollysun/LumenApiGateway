@@ -40,6 +40,9 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $this->app->register(\App\Providers\Service\Provider\ServiceProvider::class);
+        $this->app->register(\App\Providers\Aggregation\Provider\ServiceProvider::class);
+
         $this->registerRoutes();
 
         $this->app->singleton(GatewayContract::class, function () {

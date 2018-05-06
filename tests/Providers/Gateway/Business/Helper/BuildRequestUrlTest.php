@@ -1,6 +1,6 @@
 <?php
 
-use App\Providers\Gateway\Contract\ServiceContract;
+use App\Providers\Service\Contract\Service;
 use App\Providers\Gateway\Business\Helper\BuildRequestUrl;
 
 class BuildRequestUrlTest extends TestCase
@@ -12,7 +12,12 @@ class BuildRequestUrlTest extends TestCase
      */
     public function it_returns_the_request_url()
     {
-        $service = new class () implements ServiceContract {
+        $service = new class () implements Service {
+            public function getServiceKey() : string
+            {
+                return 'serviceKey';
+            }
+
             public function getScheme() : string
             {
                 return 'https';
@@ -48,6 +53,11 @@ class BuildRequestUrlTest extends TestCase
                 return [
                     'Accept'
                 ];
+            }
+
+            public function getOutputKey() : string
+            {
+                return 'outputKey';
             }
         };
 

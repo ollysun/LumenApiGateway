@@ -8,6 +8,20 @@
 [![Monthly installs][ico-downloads-monthly]][link-downloads]
 [![Travis][ico-travis]][link-travis]
 
+## Requirements
+* PHP >= 7.1
+
+## Installation
+>composer create-project triadev/lumen-api-gateway
+
+## Authentication
+
+### Personal-Access-Token
+```
+1. php artisan passport:client --personal
+2. php artisan gateway:personal-access-token:create
+```
+
 ## Reporting Issues
 If you do find an issue, please feel free to report it with GitHub's bug tracker for this project.
 

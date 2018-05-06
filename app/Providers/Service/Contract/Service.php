@@ -1,12 +1,19 @@
 <?php
-namespace App\Providers\Gateway\Contract;
+namespace App\Providers\Service\Contract;
 
 /**
- * Interface ServiceContract
- * @package App\Providers\Gateway\Contract
+ * Interface Service
+ * @package App\Providers\Service\Contract
  */
-interface ServiceContract
+interface Service
 {
+    /**
+     * Get service key
+     * 
+     * @return string
+     */
+    public function getServiceKey() : string;
+
     /**
      * Get scheme
      *
@@ -55,4 +62,11 @@ interface ServiceContract
      * @return array
      */
     public function getHeaders() : array;
+
+    /**
+     * Get output key
+     * 
+     * @return string
+     */
+    public function getOutputKey() : string;
 }

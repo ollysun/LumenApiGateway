@@ -1,11 +1,11 @@
 <?php
-namespace App\Providers\Gateway\Contract;
+namespace App\Providers\Aggregation\Contract;
 
 /**
- * Interface ActionContract
- * @package App\Providers\Gateway\Contract
+ * Interface Action
+ * @package App\Providers\Aggregation\Contract
  */
-interface ActionContract
+interface Action
 {
     /**
      * Get service
@@ -34,4 +34,11 @@ interface ActionContract
      * @return array
      */
     public function getScopes() : array;
+
+    /**
+     * Get priority
+     * 
+     * @return int
+     */
+    public function getPriority() : int;
 }

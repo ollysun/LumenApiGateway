@@ -1,7 +1,7 @@
 <?php
 
 use App\Providers\Gateway\Business\Helper\BuildRequestOptions;
-use App\Providers\Gateway\Contract\ServiceContract;
+use App\Providers\Service\Contract\Service;
 
 class BuildRequestOptionsTest extends TestCase
 {
@@ -12,7 +12,12 @@ class BuildRequestOptionsTest extends TestCase
      */
     public function it_returns_the_request_options()
     {
-        $service = new class () implements ServiceContract {
+        $service = new class () implements Service {
+            public function getServiceKey() : string
+            {
+                return 'serviceKey';
+            }
+            
             public function getScheme() : string
             {
                 return 'https';
@@ -48,6 +53,11 @@ class BuildRequestOptionsTest extends TestCase
                 return [
                     'Accept'
                 ];
+            }
+
+            public function getOutputKey() : string
+            {
+                return 'outputKey';
             }
         };
 
